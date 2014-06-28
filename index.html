@@ -1,0 +1,119 @@
+    <!doctype html>
+    <head>
+      <meta charset="utf-8">
+    
+      <title>My Parse App</title>
+      <meta name="description" content="My Parse App">
+      <meta name="viewport" content="width=device-width">
+      <link rel="stylesheet" href="css/reset.css">
+      <link rel="stylesheet" href="css/styles.css">
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+      <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.2.18.min.js"></script>
+    </head>
+    
+    <body>
+      
+      <div id="main">
+          <label id="success" style="color:green;display:none"></label>
+          <label id="error" style="color:red;display:none"></label>
+          <div>
+        <input type="file" name="img" id="profilePhotoFileUpload">
+        <input type="button" value="ADD" onclick="saveFile()">
+    </div><br><br>
+          <div>
+              <label>Category: </label>
+              <select id='catogery_list'>
+                  
+              </select>
+          
+          </div>
+          <br>
+          <a href='category.html'>Add Category</a>
+        
+      </div>
+    
+      <script type="text/javascript">
+        Parse.initialize("G9eOKHSj2dSn1fxV3ZgOAu7GAyIRCU6dCRy2S8KH", "ADCMyNXDzwZ9JAPdtrkADBBLAhPjQeuQVhp6cV2x");
+        
+    function saveFile(){
+        var fileUploadControl = $("#profilePhotoFileUpload")[0];
+    if (fileUploadControl.files.length > 0) {
+      var file = fileUploadControl.files[0];
+      var name = fileUploadControl.files[0].name;
+      var parseFile = new Parse.File(name, file);
+      parseFile.save().then(function() {
+        save_photo(parseFile.url());
+      }, function(error) {
+        // The file either could not be read, or could not be saved to Parse.
+      });
+    }
+    }
+          
+    $(document).ready(function(){
+        load_list();
+    });
+    
+    function load_list()
+          {
+               var category = Parse.Object.extend("Category");
+        var query = new Parse.Query(category);
+        var cat_list = '';
+    query.find({
+      success: function(results) {
+    //      alert("Successfully retrieved " + results.length + " scores.");
+        for (var i = 0; i < results.length; i++) { 
+          var object = results[i];
+          cat_list += "<option value='"+object.id+"'>"+object.get('name')+"  </option>";
+        }
+        
+        $('#catogery_list').append(cat_list);
+      },
+      error: function(error) {
+        alert("Error: " + error.code + " " + error.message);
+      }
+        });
+          }
+          
+    function save_photo(url)
+          {
+              var photo = Parse.Object.extend("Photo");
+              var photo_obj = new photo();
+              photo_obj.set('image_url',url);
+              var cat_id = $('#catogery_list').val();
+              photo_obj.set('category',set_category(cat_id));
+              photo_obj.save( null, {
+              success: function(object) {
+                $('#success').text('Photo added');   
+                $("#success").show();
+              },
+              error: function(model, error) {
+                $('#error').text('failed to add photo');   
+                $("#error").show();
+              }
+            });
+              
+          }
+          
+        function set_category(id)
+          {
+              var category = Parse.Object.extend("Category");
+              var cat_obj = new category();
+              cat_obj.id =id;
+              return cat_obj;
+              
+//    var query = new Parse.Query(category);
+//    query.get(id, {
+//      success: function(cat) {
+//          alert(cat.id);
+//       return cat;
+//      },
+//      error: function(object, error) {
+//        alert("Error: " + error.code + " " + error.message);
+//      }
+//    });
+          }
+        
+      </script>
+    </body>
+    
+    </html>
